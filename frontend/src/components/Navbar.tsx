@@ -83,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({ totalCount, filteredCount, onOpe
 
           {/* Swagger link */}
           <a
-            href="http://localhost:3000/api/docs"
+            href="http://localhost:4000/api/docs"
             target="_blank"
             rel="noreferrer"
             style={{

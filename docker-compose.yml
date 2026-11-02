@@ -1,6 +1,26 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: blender_help_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blender_help
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d blender_help"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - blender_help_net
+
   backend:
     build:
       context: ./backend
@@ -8,14 +28,21 @@ services:
     container_name: blender_help_backend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "4000:4000"
     environment:
       - NODE_ENV=development
-      - PORT=3000
+      - PORT=4000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=blender_help
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
-      - blender_help_data:/usr/src/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - blender_help_net
 
@@ -25,9 +52,9 @@ services:
     container_name: blender_help_frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "3000:3000"
     environment:
-      - VITE_API_URL=http://localhost:3000/api
+      - VITE_API_URL=http://localhost:4000/api
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -41,5 +68,5 @@ networks:
     driver: bridge
 
 volumes:
-  blender_help_data:
+  postgres_data:
     driver: local
