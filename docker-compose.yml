@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    container_name: blender_help_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+      - blender_help_data:/usr/src/app/data
+    networks:
+      - blender_help_net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: blender_help_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - blender_help_net
+
+networks:
+  blender_help_net:
+    driver: bridge
+
+volumes:
+  blender_help_data:
+    driver: local
