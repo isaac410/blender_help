@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     container_name: blender_help_db
     restart: unless-stopped
     ports:
@@ -18,28 +16,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - blender_help_net
 
   backend:
     build:
       context: ./backend
-      target: development
     container_name: blender_help_backend
     restart: unless-stopped
     ports:
       - "4000:4000"
     environment:
-      - NODE_ENV=development
       - PORT=4000
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=blender_help
-    volumes:
-      - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/blender_help?schema=public
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,11 +43,6 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      - VITE_API_URL=http://localhost:4000/api
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     depends_on:
       - backend
     networks:

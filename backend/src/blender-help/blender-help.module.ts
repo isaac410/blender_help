@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { BlenderHelpController } from './blender-help.controller';
-import { BlenderHelpService } from './blender-help.service';
-import { BlenderHelp } from './domain/blender-help.entity';
+import { BlenderHelpController } from './adapters/controllers/blender-help.controller';
+import { BlenderHelpService } from './application/blender-help.service';
+import { IBlenderHelpRepository } from './domain/ports/blender-help.repository.interface';
+import { PrismaBlenderHelpRepository } from './adapters/persistence/prisma-blender-help.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BlenderHelp])],
   controllers: [BlenderHelpController],
-  providers: [BlenderHelpService],
+  providers: [
+    BlenderHelpService,
+    {
+      provide: IBlenderHelpRepository,
+      useClass: PrismaBlenderHelpRepository,
+    },
+  ],
   exports: [BlenderHelpService],
 })
 export class BlenderHelpModule {}

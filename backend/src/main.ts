@@ -1,28 +1,26 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Logger } from '@nestjs/common';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const logger = new Logger('BlenderHelpBackend');
   const app = await NestFactory.create(AppModule);
 
-  // Set global prefix to /api
   app.setGlobalPrefix('api');
+  app.enableCors();
 
-  // Enable CORS for frontend client
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
-  // Swagger Documentation configuration
   const config = new DocumentBuilder()
-    .setTitle('Blender Help API (PostgreSQL)')
-    .setDescription('API REST conectada a PostgreSQL para consulta y gestión de atajos y ayudas de Blender.')
+    .setTitle('Blender Help API')
+    .setDescription('API to save and search Blender shortcuts and quick reference items')
     .setVersion('1.0')
-    .addTag('Blender Help')
+    .addTag('blender-help')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -30,7 +28,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  logger.log(` Servidor backend activo en http://localhost:${port}/api`);
-  logger.log(` Documentación Swagger disponible en http://localhost:${port}/api/docs`);
+  console.log(`Application is running on: http://localhost:${port}/api`);
+  console.log(`Swagger documentation available at: http://localhost:${port}/api/docs`);
 }
 bootstrap();

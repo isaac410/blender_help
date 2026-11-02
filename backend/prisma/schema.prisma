@@ -1,0 +1,18 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model BlenderHelp {
+  id          String   @id @default(uuid())
+  question    String
+  explanation String
+  keywords    String[]
+  version     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
